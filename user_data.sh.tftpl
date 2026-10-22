@@ -1,0 +1,29 @@
+#!/bin/bash
+set -ex
+dnf install -y git python3-pip mariadb105
+git clone ${repo_url} /opt/webapp
+cd /opt/webapp/app
+pip3 install -r requirements.txt
+
+cat > /etc/webapp.env <<ENV
+DB_HOST=${db_host}
+DB_NAME=appdb
+DB_SECRET_ARN=${secret_arn}
+AWS_REGION=${region}
+ENV
+
+cat > /etc/systemd/system/webapp.service <<UNIT
+[Unit]
+Description=Flask web app
+After=network.target
+[Service]
+WorkingDirectory=/opt/webapp/app
+EnvironmentFile=/etc/webapp.env
+ExecStart=/usr/local/bin/gunicorn -w 3 -b 0.0.0.0:8000 --timeout 30 app:app
+Restart=always
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable --now webapp

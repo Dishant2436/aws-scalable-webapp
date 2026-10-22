@@ -1,0 +1,2 @@
+region   = "ap-south-1"
+repo_url = "https://github.com/<your-username>/aws-scalable-webapp.git"
